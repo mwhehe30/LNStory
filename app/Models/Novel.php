@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Novel extends Model
@@ -50,6 +51,16 @@ class Novel extends Model
         && filled($novel->title)
       ) {
         $novel->slug = static::generateUniqueSlug($novel->title, $novel->getKey());
+      }
+
+      if ($novel->isDirty('cover') && $novel->getOriginal('cover')) {
+        Storage::disk('public')->delete($novel->getOriginal('cover'));
+      }
+    });
+
+    static::deleting(function (self $novel): void {
+      if ($novel->cover) {
+        Storage::disk('public')->delete($novel->cover);
       }
     });
   }
